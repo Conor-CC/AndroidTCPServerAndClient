@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         goToScreenOne.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), MultiClientServer.class);
+                Intent intent = new Intent(getApplicationContext(), ServerHost.class);
                 startActivity(intent);
             }
         });
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         getGoToScreenTwo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), TCPClient.class);
+                Intent intent = new Intent(getApplicationContext(), JoinSession.class);
                 startActivity(intent);
             }
         });

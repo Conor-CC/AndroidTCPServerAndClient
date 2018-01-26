@@ -20,8 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TCPClient"></activity>
-        <activity android:name=".MultiClientServer"></activity>
+        <activity android:name=".JoinSession"></activity>
+        <activity android:name=".ServerHost"></activity>
     </application>
 
 </manifest>

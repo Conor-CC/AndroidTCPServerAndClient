@@ -1,98 +1,117 @@
 package com.example.root.switchscreens;
 
-import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by root on 25/01/18.
  */
 
-public class MultiClientServer extends AppCompatActivity {
+public class MultiClientServer implements Runnable {
 
-    Button goBackHome;
-    TextView addressView;
-    TextView connectedHostsView;
-    Server multiClientTCPServer;
-    String address;
-    Handler addressHandler;
-    Handler connectedHostsHandler;
-    int port = 8070;
+    int port;
+    ServerSocket serverSocket;
+    Socket socket;
+    ArrayList<String> users = new ArrayList<String>();
 
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.screen_numero_uno);
-        instantiateThreads();
+    public MultiClientServer(int port) {
+        serverSocket = null;
+        socket = null;
+        this.port = port;
+
+        try {
+            serverSocket = new ServerSocket(port); //Can use just the one port for all clients.
+            //Socket We have is what we use to receive info from user, port is just how to get to it.
+            //Threads needed to distinguish different users data.
+        } catch (IOException e) {
+
+        }
     }
 
-    protected void instantiateThreads() {
+    public void start() {
+        new Thread(this).start();
+    }
 
-        addressView = (TextView) findViewById(R.id.AddressView);
-        connectedHostsView = (TextView) findViewById(R.id.ConnectedHostsView);
-        addressView.setText("CUNT");
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                socket = serverSocket.accept();
+//                System.out.println("\nAccepted connection " + socket.getRemoteSocketAddress());
+//                System.out.print("\n");
+                users.add(String.valueOf(socket.getRemoteSocketAddress()));
+            } catch (IOException e) {
+//                System.out.println("I/O error: " + e);
+            }
+            // new thread for a client
+            new EchoThread(socket).start();
+        }
+    }
 
-        multiClientTCPServer = new Server(port);
-        multiClientTCPServer.start();
+    public void stop() throws IOException {
+        serverSocket.close();
+        socket.close();
+    }
 
-        address = getIpAddress() + ":" + port;
-        addressView.setText(address);
+    public String listCurrentConnections () {
+        if (users.isEmpty())
+            return "No active connections...";
+        String toReturn = "";
+        for (String user : users) {
+            toReturn += user + "\n";
+        }
+        return toReturn;
+    }
 
-        addressHandler = new Handler();
-        addressHandler.post(updateAddressView);
+    public int getPort() {
+        return port;
+    }
 
-        connectedHostsHandler = new Handler();
-        connectedHostsHandler.post(updateConnectedHostsView);
+    private class EchoThread extends Thread {
+        protected Socket socket;
 
+        public EchoThread(Socket clientSocket) {
+            this.socket = clientSocket;
+        }
 
-        goBackHome = (Button) findViewById(R.id.button3);
-
-        goBackHome.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                finish();
+        public void run() {
+            InputStream inp = null;
+            BufferedReader brinp = null;
+            DataOutputStream out = null;
+            try {
+                inp = socket.getInputStream();
+                brinp = new BufferedReader(new InputStreamReader(inp));
+                out = new DataOutputStream(socket.getOutputStream());
+            } catch (IOException e) {
+                return;
+            }
+            String line;
+            while (true) {
                 try {
-                    multiClientTCPServer.stop();
+                    line = brinp.readLine();
+                    if ((line == null) || line.equalsIgnoreCase("QUIT")) {
+                        users.remove(String.valueOf(socket.getRemoteSocketAddress()));
+                        socket.close();
+                        System.out.println("Removed a user \n");
+                        for (String user : users) {
+                            System.out.print(user + "    ");
+                        }
+                        return;
+                    } else {
+                        out.writeBytes(line + "\n\r");
+                        out.flush();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    return;
                 }
-                multiClientTCPServer = new Server(port); //
             }
-        });
-    }
-
-    protected String getIpAddress() {
-        WifiManager wifiMan = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInf = wifiMan.getConnectionInfo();
-        int ipAddress = wifiInf.getIpAddress();
-        return String.format("%d.%d.%d.%d", (ipAddress & 0xff),(ipAddress >> 8 & 0xff),(ipAddress >> 16 & 0xff),(ipAddress >> 24 & 0xff));
-    }
-
-    protected Runnable updateAddressView = new Runnable() {
-
-        @Override
-        public void run() {
-            String toUpdate = getIpAddress() + ":" + port;
-            addressView.setText(toUpdate);
-            addressHandler.postDelayed(this, 1000);
         }
-    };
-
-    protected Runnable updateConnectedHostsView = new Runnable() {
-
-        @Override
-        public void run() {
-            String toUpdate = "Connections List:\n" + multiClientTCPServer.listCurrentConnections();
-            connectedHostsView.setText(toUpdate);
-            connectedHostsHandler.postDelayed(this, 1000);
-        }
-    };
+    }
 }
