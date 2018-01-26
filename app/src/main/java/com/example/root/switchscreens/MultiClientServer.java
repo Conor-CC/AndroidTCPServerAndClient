@@ -57,12 +57,14 @@ public class MultiClientServer extends AppCompatActivity {
         goBackHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                finish();
                 try {
                     multiClientTCPServer.stop();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                finish();
+                multiClientTCPServer = new Server(port); //
             }
         });
     }
