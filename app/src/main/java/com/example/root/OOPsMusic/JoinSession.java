@@ -1,4 +1,4 @@
-package com.example.root.switchscreens;
+package com.example.root.OOPsMusic;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,7 +33,7 @@ public class JoinSession extends AppCompatActivity {
     }
 
     protected void instantiateThreads() {
-        view = (TextView) findViewById(R.id.viewOne);
+        view = (TextView) findViewById(R.id.ConnectedToView);
         view.setText("Dont crash plox");
 
         serverResponseView = (TextView) findViewById(R.id.viewFive);
@@ -65,10 +65,10 @@ public class JoinSession extends AppCompatActivity {
 
 
     public void sendIpAndPortData(View button) {
-        ipAddress = (EditText) findViewById(R.id.viewTwo);
+        ipAddress = (EditText) findViewById(R.id.IPInputField);
         String ip = ipAddress.getText().toString();
 
-        portNumber = (EditText) findViewById(R.id.viewThree);
+        portNumber = (EditText) findViewById(R.id.PortInputField);
         String port = (portNumber.getText().toString());
         int portNum = Integer.parseInt(portNumber.getText().toString());
         String txt = "CLICKED, ip: " + ip + ", port: " + port;
@@ -81,7 +81,7 @@ public class JoinSession extends AppCompatActivity {
 
     public void sendTransmission(View button) {
         if (client.isConnected()) {
-            transmission = (EditText) findViewById(R.id.viewFour);
+            transmission = (EditText) findViewById(R.id.TransmissionInputField);
             String toSend = transmission.getText().toString();
             try {
                 client.sendTrans(toSend);

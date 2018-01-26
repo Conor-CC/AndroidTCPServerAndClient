@@ -1,4 +1,4 @@
-package com.example.root.switchscreens;
+package com.example.root.OOPsMusic;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -21,8 +21,6 @@ public class MainActivity extends AppCompatActivity {
     protected void initialiseButtons() {
         goToScreenOne = (Button) findViewById(R.id.button1);
         getGoToScreenTwo = (Button) findViewById(R.id.button2);
-//        unoGoBackToHome = (Button) findViewById(R.id.button3);
-//        dosGoBackToHome = (Button) findViewById(R.id.button4);
 
 
         goToScreenOne.setOnClickListener(new View.OnClickListener() {
